@@ -9,13 +9,11 @@ export const WishlistProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const { isAuthenticated, user } = useAuth();
 
-  // Ambil token setiap kali diperlukan
   const getConfig = () => {
     const token = localStorage.getItem('token');
     return { headers: { Authorization: `Bearer ${token}` } };
   };
 
-  // Fetch wishlist from backend when user logs in
   useEffect(() => {
     if (isAuthenticated && user) {
       fetchWishlist();
@@ -27,29 +25,40 @@ export const WishlistProvider = ({ children }) => {
 
   const fetchWishlist = async () => {
     try {
-      const { data } = await axios.get('http://localhost:5000/api/wishlist', getConfig());
+      const { data } = await axios.get('/api/wishlist', getConfig());
       setWishlist(data.data || []);
     } catch (error) {
       console.error('Error fetching wishlist:', error);
-      if (error.response?.status === 401) {
-        setWishlist([]);
-      }
+      if (error.response?.status === 401) setWishlist([]);
     } finally {
       setLoading(false);
     }
   };
 
+  // ✅ TOGGLE: add if not exists, remove if exists
   const addToWishlist = async (product) => {
     if (!isAuthenticated) return false;
     
+    const isAlreadyInWishlist = wishlist.some(item => item._id === product._id);
+    
     try {
-      const { data } = await axios.post('http://localhost:5000/api/wishlist/add', 
-        { productId: product._id }, getConfig()
-      );
-      setWishlist(data.data || []);
-      return true;
+      if (isAlreadyInWishlist) {
+        // REMOVE
+        const { data } = await axios.delete(
+          `/api/wishlist/remove/${product._id}`, getConfig()
+        );
+        setWishlist(data.data || []);
+        return true;
+      } else {
+        // ADD
+        const { data } = await axios.post('/api/wishlist/add', 
+          { productId: product._id }, getConfig()
+        );
+        setWishlist(data.data || []);
+        return true;
+      }
     } catch (error) {
-      console.error('Error adding to wishlist:', error);
+      console.error('Error toggling wishlist:', error);
       return false;
     }
   };
@@ -57,7 +66,7 @@ export const WishlistProvider = ({ children }) => {
   const removeFromWishlist = async (productId) => {
     try {
       const { data } = await axios.delete(
-        `http://localhost:5000/api/wishlist/remove/${productId}`, getConfig()
+        `/api/wishlist/remove/${productId}`, getConfig()
       );
       setWishlist(data.data || []);
     } catch (error) {
@@ -67,7 +76,7 @@ export const WishlistProvider = ({ children }) => {
 
   const clearWishlist = async () => {
     try {
-      await axios.delete('http://localhost:5000/api/wishlist/clear', getConfig());
+      await axios.delete('/api/wishlist/clear', getConfig());
       setWishlist([]);
     } catch (error) {
       console.error('Error clearing wishlist:', error);
@@ -80,8 +89,7 @@ export const WishlistProvider = ({ children }) => {
 
   return (
     <WishlistContext.Provider value={{
-      wishlist, loading, addToWishlist, removeFromWishlist, 
-      clearWishlist, isInWishlist
+      wishlist, loading, addToWishlist, removeFromWishlist, clearWishlist, isInWishlist
     }}>
       {children}
     </WishlistContext.Provider>
@@ -90,8 +98,8 @@ export const WishlistProvider = ({ children }) => {
 
 export const useWishlist = () => {
   const context = useContext(WishlistContext);
-  if (!context) {
-    throw new Error('useWishlist must be used within a WishlistProvider');
-  }
+  if (!context) throw new Error('useWishlist must be used within WishlistProvider');
   return context;
 };
+
+export default WishlistContext;

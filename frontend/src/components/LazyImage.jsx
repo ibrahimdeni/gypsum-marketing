@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { getImageUrl } from '../utils/baseUrl';
 
 const LazyImage = ({ src, alt, className = '', placeholderClassName = '' }) => {
   const [isLoaded, setIsLoaded] = useState(false);

@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useChat } from '../context/ChatContext';
 import { useLanguage } from '../context/LanguageContext';
 import axios from 'axios';
+import Toast from '../utils/toast';
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
@@ -29,7 +30,7 @@ const Chat = () => {
 
   const fetchMessages = async () => {
     try {
-      const { data } = await axios.get('http://localhost:5000/api/chat/messages', config);
+      const { data } = await axios.get('/api/chat/messages', config);
       setMessages(data.data || []);
       fetchUnreadCount();
     } catch (error) {
@@ -43,12 +44,13 @@ const Chat = () => {
     e.preventDefault();
     if (!newMessage.trim()) return;
     try {
-      await axios.post('http://localhost:5000/api/chat/send', { message: newMessage }, config);
+      await axios.post('/api/chat/send', { message: newMessage }, config);
       setNewMessage('');
       fetchMessages();
+      Toast.chatSent();
       inputRef.current?.focus();
     } catch (error) {
-      alert(t('error'));
+      Toast.chatError();
     }
   };
 
@@ -78,14 +80,14 @@ const Chat = () => {
     <div className="h-screen flex flex-col bg-gray-100 dark:bg-gray-950">
       {/* Mini Navbar */}
       <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center gap-4 flex-shrink-0 shadow-sm">
-        <Link 
-          to="/" 
+        <Link
+          to="/"
           className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition flex items-center gap-1 text-sm"
         >
           <span className="text-lg">←</span>
           <span className="hidden sm:inline">{t('back')}</span>
         </Link>
-        
+
         <div className="flex items-center gap-3 flex-1">
           <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
             A
@@ -119,9 +121,9 @@ const Chat = () => {
         ) : (
           messages.map((msg, index) => {
             const isMe = msg.sender._id === user._id;
-            const showDate = index === 0 || 
-              new Date(msg.createdAt).toDateString() !== new Date(messages[index-1].createdAt).toDateString();
-            
+            const showDate = index === 0 ||
+              new Date(msg.createdAt).toDateString() !== new Date(messages[index - 1].createdAt).toDateString();
+
             return (
               <React.Fragment key={msg._id}>
                 {showDate && (
@@ -133,11 +135,10 @@ const Chat = () => {
                 )}
                 <div className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[85%] sm:max-w-[70%]`}>
-                    <div className={`px-4 py-2.5 rounded-2xl ${
-                      isMe 
-                        ? 'bg-blue-600 text-white rounded-br-md ml-auto' 
-                        : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-bl-md shadow-sm'
-                    }`}>
+                    <div className={`px-4 py-2.5 rounded-2xl ${isMe
+                      ? 'bg-blue-600 text-white rounded-br-md ml-auto'
+                      : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-bl-md shadow-sm'
+                      }`}>
                       {!isMe && (
                         <p className="text-xs font-semibold mb-0.5 opacity-60">Admin</p>
                       )}

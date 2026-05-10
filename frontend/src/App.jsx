@@ -9,6 +9,7 @@ import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import ScrollToTop from './components/ScrollToTop';
+import { Toaster } from 'react-hot-toast';
 
 // Skeleton loaders untuk fallback
 import { DetailSkeleton, ProductGridSkeleton } from './components/SkeletonLoader';
@@ -26,9 +27,14 @@ const SignUp = lazy(() => import('./pages/SignUp'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const InventoryManagement = lazy(() => import('./pages/InventoryManagement'));
 const AdminChat = lazy(() => import('./pages/AdminChat'));
+const AdminUsers = lazy(() => import('./pages/AdminUsers'));
+const AdminInquiries = lazy(() => import('./pages/AdminInquiries'));
 const Cart = lazy(() => import('./pages/Cart'));
 const Wishlist = lazy(() => import('./pages/Wishlist'));
 const Chat = lazy(() => import('./pages/Chat'));
+const Profile = lazy(() => import('./pages/Profile'));
+const AdminReviews = lazy(() => import('./pages/AdminReviews'));
+const AdminAnalytics = lazy(() => import('./pages/AdminAnalytics'));
 
 // Page Loader
 const PageLoader = () => (
@@ -52,6 +58,12 @@ function App() {
                   <WishlistProvider>
                     <Router>
                       <ScrollToTop />
+                      <Toaster
+                        position="top-right"
+                        reverseOrder={false}
+                        gutter={8}
+                        toastOptions={{ duration: 3000 }}
+                      />
                       <Suspense fallback={<PageLoader />}>
                         <Routes>
                           <Route path="/" element={<Layout />}>
@@ -69,6 +81,7 @@ function App() {
                             <Route path="contact" element={<Contact />} />
                             <Route path="cart" element={<Cart />} />
                             <Route path="wishlist" element={<Wishlist />} />
+                            <Route path="profile" element={<Profile />} />
                           </Route>
                           <Route path="/chat" element={
                             <Suspense fallback={<PageLoader />}>
@@ -80,6 +93,10 @@ function App() {
                           <Route path="/admin/dashboard" element={<AdminDashboard />} />
                           <Route path="/admin/inventory" element={<InventoryManagement />} />
                           <Route path="/admin/chat" element={<AdminChat />} />
+                          <Route path="/admin/users" element={<AdminUsers />} />
+                          <Route path="/admin/inquiries" element={<AdminInquiries />} />
+                          <Route path="/admin/reviews" element={<AdminReviews />} />
+                          <Route path="/admin/analytics" element={<AdminAnalytics />} />
                         </Routes>
                       </Suspense>
                     </Router>

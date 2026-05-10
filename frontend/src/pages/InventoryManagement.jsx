@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useLanguage } from '../context/LanguageContext';
+import Toast from '../utils/toast';
 
 const InventoryManagement = () => {
   const [products, setProducts] = useState([]);
@@ -21,9 +22,9 @@ const InventoryManagement = () => {
   const fetchData = async () => {
     try {
       const [prodRes, invRes, sumRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/products'),
-        axios.get('http://localhost:5000/api/inventory', config),
-        axios.get('http://localhost:5000/api/inventory/summary', config)
+        axios.get('/api/products'),
+        axios.get('/api/inventory', config),
+        axios.get('/api/inventory/summary', config)
       ]);
       setProducts(prodRes.data.data);
       setInventoryLogs(invRes.data.data);
@@ -36,11 +37,11 @@ const InventoryManagement = () => {
     if (!selectedProduct || !quantity) return alert('Fill all fields');
     try {
       const endpoint = type === 'in' ? '/api/inventory/add' : '/api/inventory/reduce';
-      await axios.post(`http://localhost:5000${endpoint}`, { productId: selectedProduct, quantity: Number(quantity), notes }, config);
-      alert(t('success'));
+      await axios.post(`${endpoint}`, { productId: selectedProduct, quantity: Number(quantity), notes }, config);
+      Toast.stockUpdated();
       setSelectedProduct(''); setQuantity(''); setNotes('');
       fetchData();
-    } catch (error) { alert(error.response?.data?.message || t('error')); }
+    } catch (error) { Toast.error(error.response?.data?.message || 'Failed to update stock'); }
   };
 
   return (

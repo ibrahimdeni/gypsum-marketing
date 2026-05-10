@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
+import { getImageUrl } from '../utils/baseUrl';
 
 const Wishlist = () => {
   const { wishlist, removeFromWishlist } = useWishlist();
@@ -32,7 +33,7 @@ const Wishlist = () => {
             <div className="flex gap-4">
               <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-700">
                 {product.images && product.images.length > 0 ? (
-                  <img src={product.images[0].url} alt={product.name} className="w-full h-full object-cover" />
+                  <img src={getImageUrl(product.images[0]?.url)} alt={product.name} className="w-full h-full object-cover" />
                 ) : (
                   <div className="bg-gradient-to-br from-blue-400 to-blue-600 w-full h-full flex items-center justify-center text-3xl">🏗️</div>
                 )}

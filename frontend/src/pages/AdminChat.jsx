@@ -36,7 +36,7 @@ const AdminChat = () => {
 
   const fetchRooms = async () => {
     try {
-      const { data } = await axios.get('http://localhost:5000/api/chat/rooms', config);
+      const { data } = await axios.get('/api/chat/rooms', config);
       setRooms(data.data || []);
       fetchUnreadCount();
     } catch (error) { console.error('Error fetching rooms:', error); }
@@ -44,7 +44,7 @@ const AdminChat = () => {
 
   const fetchMessages = async (userId) => {
     try {
-      const { data } = await axios.get(`http://localhost:5000/api/chat/messages?userId=${userId}`, config);
+      const { data } = await axios.get(`/api/chat/messages?userId=${userId}`, config);
       setMessages(data.data || []);
     } catch (error) { console.error('Error fetching messages:', error); }
   };
@@ -53,7 +53,7 @@ const AdminChat = () => {
     e.preventDefault();
     if (!newMessage.trim() || !selectedRoom) return;
     try {
-      await axios.post('http://localhost:5000/api/chat/send', { message: newMessage, receiverId: selectedRoom.user._id }, config);
+      await axios.post('/api/chat/send', { message: newMessage, receiverId: selectedRoom.user._id }, config);
       setNewMessage('');
       fetchMessages(selectedRoom.user._id);
       fetchRooms();

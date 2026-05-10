@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { getImageUrl } from '../utils/baseUrl';
 
 const ImageSlider = ({ images, productName }) => {
   const [currentIndex, setCurrentIndex] = useState(0);

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import Toast from '../utils/toast';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -16,13 +17,23 @@ const Login = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
+    
     try {
       const user = await login(email, password);
-      if (user.role === 'admin') navigate('/admin/dashboard');
-      else navigate('/');
+      Toast.loginSuccess(user.name);
+      
+      // ✅ REDIRECT SETELAH LOGIN BERHASIL
+      if (user.role === 'admin') {
+        navigate('/admin/dashboard', { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
     } catch (err) {
-      setError(err.response?.data?.message || t('error'));
-    } finally { setLoading(false); }
+      Toast.loginError();
+      setError(err.response?.data?.message || 'Invalid email or password');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

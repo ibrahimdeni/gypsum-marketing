@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useLanguage } from '../context/LanguageContext';
+import Toast from '../utils/toast';
+import { getImageUrl } from '../utils/baseUrl';
+
 
 const AdminDashboard = () => {
   const [products, setProducts] = useState([]);
@@ -23,7 +26,7 @@ const AdminDashboard = () => {
 
   const fetchProducts = async () => {
     try {
-      const { data } = await axios.get('http://localhost:5000/api/products');
+      const { data } = await axios.get('/api/products');
       setProducts(data.data || []);
     } catch (error) { console.error('Error fetching products:', error); }
   };
@@ -31,19 +34,50 @@ const AdminDashboard = () => {
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
-    if (form.images.length + files.length > 12) return alert('Max 12 images!');
+
+    // ✅ Validasi jumlah
+    if (form.images.length + files.length > 12) {
+      Toast.warning('Maksimal 12 gambar per produk! 📸');
+      return;
+    }
+
+    // ✅ Validasi tiap file
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    for (const file of files) {
+      if (file.size > 5 * 1024 * 1024) {
+        Toast.error(`File "${file.name}" terlalu besar! Maks 5MB 📦`);
+        return;
+      }
+      if (!allowedTypes.includes(file.type)) {
+        Toast.error(`File "${file.name}" format tidak didukung! 🖼️`);
+        return;
+      }
+    }
+
     setUploading(true);
     const formData = new FormData();
     files.forEach(file => formData.append('images', file));
+
     try {
-      const { data } = await axios.post('http://localhost:5000/api/upload/multiple', formData, {
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+      const { data } = await axios.post('/api/upload/multiple', formData, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        },
       });
-      const newImages = data.data.map(img => ({ url: `http://localhost:5000${img.url}`, alt: img.filename }));
+      const newImages = data.data.map(img => ({
+        url: `${getImageUrl(img.url)}`,
+        alt: img.filename
+      }));
       setForm(prev => ({ ...prev, images: [...prev.images, ...newImages] }));
-      alert('Uploaded!');
-    } catch (error) { alert('Upload failed'); }
-    finally { setUploading(false); }
+      Toast.uploadSuccess(files.length);
+    } catch (error) {
+      Toast.uploadError();
+      console.error('Upload error:', error);
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
   };
 
   const removeImage = (index) => {
@@ -55,19 +89,21 @@ const AdminDashboard = () => {
     const payload = { ...form, price: Number(form.price), stock: Number(form.stock) };
     try {
       if (editing) {
-        await axios.put(`http://localhost:5000/api/products/${editing}`, payload, config);
+        await axios.put(`/api/products/${editing}`, payload, config);
+        Toast.productUpdated();
       } else {
-        await axios.post('http://localhost:5000/api/products', payload, config);
+        await axios.post('/api/products', payload, config);
+        Toast.productCreated();
       }
       setEditing(null);
       setForm({ name: '', price: '', category: 'gypsum-board', description: '', shortDescription: '', stock: '', isFeatured: false, slug: '', images: [] });
       fetchProducts();
-    } catch (error) { alert('Error: ' + (error.response?.data?.message || error.message)); }
+    } catch (error) { Toast.error('Failed to save product'); }
   };
 
   const handleEdit = (product) => {
     setEditing(product._id);
-    setForm({ 
+    setForm({
       name: product.name, price: product.price, category: product.category,
       description: product.description || '', shortDescription: product.shortDescription || '',
       stock: product.stock || 0, isFeatured: product.isFeatured || false,
@@ -79,9 +115,10 @@ const AdminDashboard = () => {
   const handleDelete = async (id) => {
     if (window.confirm(t('confirm_delete'))) {
       try {
-        await axios.delete(`http://localhost:5000/api/products/${id}`, config);
+        await axios.delete(`/api/products/${id}`, config);
+        Toast.productDeleted();
         fetchProducts();
-      } catch (error) { alert('Error deleting'); }
+      } catch (error) { Toast.error('Failed to delete'); }
     }
   };
 
@@ -99,6 +136,9 @@ const AdminDashboard = () => {
             <span className="text-gray-600">|</span>
             <Link to="/admin/inventory" className="text-green-400 hover:text-green-300 transition">📦 {t('nav_inventory')}</Link>
             <Link to="/admin/chat" className="text-yellow-400 hover:text-yellow-300 transition">💬 {t('nav_chat')}</Link>
+            <Link to="/admin/inquiries" className="text-yellow-400 hover:text-yellow-300 transition">📧 Inquiries</Link>
+            <Link to="/admin/reviews" className="text-yellow-400 hover:text-yellow-300">⭐ Reviews</Link>
+            <Link to="/admin/analytics" className="text-pink-400 hover:text-pink-300">📊 Analytics</Link>
           </div>
           <div className="flex items-center gap-4">
             <Link to="/" className="text-gray-300 hover:text-white transition">{t('view_site')}</Link>
@@ -115,18 +155,18 @@ const AdminDashboard = () => {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
               <div>
                 <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">{t('admin_product_name')} *</label>
-                <input type="text" required className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" 
-                  value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
+                <input type="text" required className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">{t('admin_price')} *</label>
-                <input type="number" required className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" 
-                  value={form.price} onChange={e => setForm({...form, price: e.target.value})} />
+                <input type="number" required className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">{t('admin_category')}</label>
-                <select className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" 
-                  value={form.category} onChange={e => setForm({...form, category: e.target.value})}>
+                <select className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
                   <option value="gypsum-board">{t('products_category_board')}</option>
                   <option value="gypsum-powder">{t('products_category_powder')}</option>
                   <option value="ceiling-tiles">{t('products_category_ceiling')}</option>
@@ -137,17 +177,17 @@ const AdminDashboard = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">{t('admin_stock')}</label>
-                <input type="number" className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" 
-                  value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} />
+                <input type="number" className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">{t('admin_short_desc')}</label>
-                <input type="text" className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" 
-                  value={form.shortDescription} onChange={e => setForm({...form, shortDescription: e.target.value})} />
+                <input type="text" className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  value={form.shortDescription} onChange={e => setForm({ ...form, shortDescription: e.target.value })} />
               </div>
               <div className="flex items-end pb-2">
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" className="w-5 h-5" checked={form.isFeatured} onChange={e => setForm({...form, isFeatured: e.target.checked})} />
+                  <input type="checkbox" className="w-5 h-5" checked={form.isFeatured} onChange={e => setForm({ ...form, isFeatured: e.target.checked })} />
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">⭐ {t('admin_featured')}</span>
                 </label>
               </div>
@@ -159,7 +199,7 @@ const AdminDashboard = () => {
               <div className="flex flex-wrap gap-3 mb-3">
                 {form.images.map((img, index) => (
                   <div key={index} className="relative w-24 h-24 rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-600 group">
-                    <img src={img.url} alt={img.alt || 'Product'} className="w-full h-full object-cover" />
+                    <img src={getImageUrl(img.url)} alt={img.alt || 'Product'} className="w-full h-full object-cover" />
                     <button type="button" onClick={() => removeImage(index)} className="absolute top-0 right-0 bg-red-500 text-white w-6 h-6 rounded-bl-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition">×</button>
                     <span className="absolute bottom-0 left-0 bg-black/50 text-white text-xs px-2 py-0.5 rounded-tr-lg">{index + 1}</span>
                   </div>
@@ -176,8 +216,8 @@ const AdminDashboard = () => {
 
             <div className="mb-4">
               <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">{t('admin_description')} *</label>
-              <textarea required className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" rows="3" 
-                value={form.description} onChange={e => setForm({...form, description: e.target.value})} />
+              <textarea required className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" rows="3"
+                value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
             </div>
 
             <div className="flex gap-4">
@@ -215,8 +255,7 @@ const AdminDashboard = () => {
                     <tr key={p._id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
                       <td className="p-4">
                         {p.images && p.images.length > 0 ? (
-                          <img src={p.images[0].url} alt={p.name} className="w-12 h-12 rounded-lg object-cover" />
-                        ) : (
+                          <img src={getImageUrl(p.images[0]?.url)} alt={p.name} className="w-12 h-12 rounded-lg object-cover" />) : (
                           <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center text-lg">🏗️</div>
                         )}
                       </td>
@@ -224,11 +263,10 @@ const AdminDashboard = () => {
                       <td className="p-4"><span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-sm">{p.category?.replace('-', ' ')}</span></td>
                       <td className="p-4 font-semibold text-green-600 dark:text-green-400">Rp {p.price?.toLocaleString()}</td>
                       <td className="p-4">
-                        <span className={`px-3 py-1 rounded-full text-sm ${
-                          p.stock > 50 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 
-                          p.stock > 0 ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : 
-                          'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                        }`}>{p.stock || 0} units</span>
+                        <span className={`px-3 py-1 rounded-full text-sm ${p.stock > 50 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
+                          p.stock > 0 ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
+                            'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                          }`}>{p.stock || 0} units</span>
                       </td>
                       <td className="p-4 text-xl">{p.isFeatured ? '⭐' : '−'}</td>
                       <td className="p-4">

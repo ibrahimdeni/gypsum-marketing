@@ -1,0 +1,25 @@
+{
+    "name": "GypsumPro - Premium Gypsum Products",
+    "short_name": "GypsumPro",
+    "description": "Professional Gypsum Marketing Website with E-commerce features",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#2563eb",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/icon.svg",
+            "sizes": "512x512",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "shopping",
+        "business",
+        "home"
+    ],
+    "lang": "id-ID",
+    "dir": "ltr"
+}

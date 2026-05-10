@@ -2,6 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
+import Toast from '../utils/toast';
+import { getImageUrl } from '../utils/baseUrl';
 
 const Cart = () => {
   const { cart, removeFromCart, updateQuantity, clearCart, cartTotal } = useCart();
@@ -24,7 +26,10 @@ const Cart = () => {
     <div className="max-w-4xl mx-auto px-4 py-12 dark:bg-gray-950">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white">🛒 {t('cart_title')}</h1>
-        <button onClick={clearCart} className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium">
+        <button onClick={() => {
+          clearCart();
+          Toast.cartCleared();
+        }} className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium">
           {t('cart_clear')}
         </button>
       </div>
@@ -34,7 +39,7 @@ const Cart = () => {
           <div key={item._id} className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow dark:shadow-gray-900/50 flex items-center gap-6">
             <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-700">
               {item.images && item.images.length > 0 ? (
-                <img src={item.images[0].url} alt={item.name} className="w-full h-full object-cover" />
+                <img src={getImageUrl(item.images[0]?.url)} alt={item.name} className="w-full h-full object-cover" />
               ) : (
                 <div className="bg-gradient-to-br from-blue-400 to-blue-600 w-full h-full flex items-center justify-center text-3xl">🏗️</div>
               )}
@@ -49,7 +54,10 @@ const Cart = () => {
               <button onClick={() => updateQuantity(item._id, item.quantity + 1)} className="px-3 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">+</button>
             </div>
             <p className="font-bold text-lg min-w-[100px] text-right text-gray-900 dark:text-white">Rp {(item.price * item.quantity).toLocaleString()}</p>
-            <button onClick={() => removeFromCart(item._id)} className="text-red-400 hover:text-red-600 text-2xl">🗑️</button>
+            <button onClick={() => {
+              removeFromCart(item._id);
+              Toast.cartRemoved();
+            }} className="text-red-400 hover:text-red-600 text-2xl">🗑️</button>
           </div>
         ))}
       </div>

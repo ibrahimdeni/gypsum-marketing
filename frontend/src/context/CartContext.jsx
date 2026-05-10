@@ -27,7 +27,7 @@ export const CartProvider = ({ children }) => {
 
   const fetchCart = async () => {
     try {
-      const { data } = await axios.get('http://localhost:5000/api/cart', getConfig());
+      const { data } = await axios.get('/api/cart', getConfig());
       setCart(data.data || []);
     } catch (error) {
       console.error('Error fetching cart:', error);
@@ -44,9 +44,10 @@ export const CartProvider = ({ children }) => {
     if (!isAuthenticated) return false;
     
     try {
-      const { data } = await axios.post('http://localhost:5000/api/cart/add', 
+      const { data } = await axios.post('/api/cart/add', 
         { productId: product._id, quantity }, getConfig()
       );
+      console.log('📦 CART API RESPONSE:', data); // ← TAMBAHKAN INI
       setCart(data.data || []);
       return true;
     } catch (error) {
@@ -57,7 +58,7 @@ export const CartProvider = ({ children }) => {
 
   const removeFromCart = async (productId) => {
     try {
-      await axios.delete(`http://localhost:5000/api/cart/remove/${productId}`, getConfig());
+      await axios.delete(`/api/cart/remove/${productId}`, getConfig());
       setCart(prev => prev.filter(item => item._id !== productId));
     } catch (error) {
       console.error('Error removing from cart:', error);
@@ -70,7 +71,7 @@ export const CartProvider = ({ children }) => {
     }
     
     try {
-      const { data } = await axios.put('http://localhost:5000/api/cart/update', 
+      const { data } = await axios.put('/api/cart/update', 
         { productId, quantity }, getConfig()
       );
       setCart(data.data || []);
@@ -81,7 +82,7 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = async () => {
     try {
-      await axios.delete('http://localhost:5000/api/cart/clear', getConfig());
+      await axios.delete('/api/cart/clear', getConfig());
       setCart([]);
     } catch (error) {
       console.error('Error clearing cart:', error);
@@ -108,3 +109,5 @@ export const useCart = () => {
   }
   return context;
 };
+
+export default CartContext;

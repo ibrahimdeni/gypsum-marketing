@@ -61,7 +61,6 @@ exports.removeFromWishlist = async (req, res) => {
     }
     
     const populated = await Wishlist.findById(wishlist._id).populate('products');
-    
     res.json({ success: true, data: populated.products });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

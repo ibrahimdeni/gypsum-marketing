@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import Toast from '../utils/toast';
 
 const SignUp = () => {
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
@@ -19,10 +20,11 @@ const SignUp = () => {
     setLoading(true);
     try {
       await register(form.name, form.email, form.password);
+      Toast.register(form.name);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || t('error'));
-    } finally { setLoading(false); }
+      Toast.error(err.response?.data?.message || 'Registration failed');
+    }
   };
 
   return (
@@ -39,22 +41,22 @@ const SignUp = () => {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('signup_name')}</label>
-            <input type="text" required value={form.name} onChange={e => setForm({...form, name: e.target.value})}
+            <input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('signup_email')}</label>
-            <input type="email" required value={form.email} onChange={e => setForm({...form, email: e.target.value})}
+            <input type="email" required value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('signup_password')}</label>
-            <input type="password" required value={form.password} onChange={e => setForm({...form, password: e.target.value})}
+            <input type="password" required value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('signup_confirm')}</label>
-            <input type="password" required value={form.confirmPassword} onChange={e => setForm({...form, confirmPassword: e.target.value})}
+            <input type="password" required value={form.confirmPassword} onChange={e => setForm({ ...form, confirmPassword: e.target.value })}
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
           </div>
           <button type="submit" disabled={loading}

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /chat/
+
+Sitemap: https://gypsumpro.com/sitemap.xml

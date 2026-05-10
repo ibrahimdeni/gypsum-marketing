@@ -16,7 +16,7 @@ export const ChatProvider = ({ children }) => {
   const fetchUnreadCount = useCallback(async () => {
     if (!isAuthenticated) return;
     try {
-      const { data } = await axios.get('http://localhost:5000/api/chat/unread', getConfig());
+      const { data } = await axios.get('/api/chat/unread', getConfig());
       setUnreadCount(data.data?.count || 0);
     } catch (error) {
       console.error('Error fetching unread count:', error);
@@ -42,3 +42,5 @@ export const ChatProvider = ({ children }) => {
 };
 
 export const useChat = () => useContext(ChatContext);
+
+export default ChatContext;
