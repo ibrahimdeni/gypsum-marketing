@@ -1,0 +1,97 @@
+import React, { Suspense, lazy } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+import { ThemeProvider } from './context/ThemeContext';
+import { LanguageProvider } from './context/LanguageContext';
+import { AuthProvider } from './context/AuthContext';
+import { ChatProvider } from './context/ChatContext';
+import { CartProvider } from './context/CartContext';
+import { WishlistProvider } from './context/WishlistContext';
+import ErrorBoundary from './components/ErrorBoundary';
+import ScrollToTop from './components/ScrollToTop';
+
+// Skeleton loaders untuk fallback
+import { DetailSkeleton, ProductGridSkeleton } from './components/SkeletonLoader';
+
+// Eager load (yang langsung diakses)
+import Layout from './components/Layout';
+
+// Lazy load semua halaman
+const Home = lazy(() => import('./pages/Home'));
+const Products = lazy(() => import('./pages/Products'));
+const ProductDetail = lazy(() => import('./pages/ProductDetail'));
+const Contact = lazy(() => import('./pages/Contact'));
+const Login = lazy(() => import('./pages/Login'));
+const SignUp = lazy(() => import('./pages/SignUp'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const InventoryManagement = lazy(() => import('./pages/InventoryManagement'));
+const AdminChat = lazy(() => import('./pages/AdminChat'));
+const Cart = lazy(() => import('./pages/Cart'));
+const Wishlist = lazy(() => import('./pages/Wishlist'));
+const Chat = lazy(() => import('./pages/Chat'));
+
+// Page Loader
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+    <div className="text-center">
+      <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+      <p className="text-gray-500 dark:text-gray-400">Loading...</p>
+    </div>
+  </div>
+);
+
+function App() {
+  return (
+    <ErrorBoundary>
+      <ThemeProvider>
+        <HelmetProvider>
+          <LanguageProvider>
+            <AuthProvider>
+              <ChatProvider>
+                <CartProvider>
+                  <WishlistProvider>
+                    <Router>
+                      <ScrollToTop />
+                      <Suspense fallback={<PageLoader />}>
+                        <Routes>
+                          <Route path="/" element={<Layout />}>
+                            <Route index element={<Home />} />
+                            <Route path="products" element={
+                              <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-20"><ProductGridSkeleton count={6} /></div>}>
+                                <Products />
+                              </Suspense>
+                            } />
+                            <Route path="products/:id" element={
+                              <Suspense fallback={<DetailSkeleton />}>
+                                <ProductDetail />
+                              </Suspense>
+                            } />
+                            <Route path="contact" element={<Contact />} />
+                            <Route path="cart" element={<Cart />} />
+                            <Route path="wishlist" element={<Wishlist />} />
+                          </Route>
+                          <Route path="/chat" element={
+                            <Suspense fallback={<PageLoader />}>
+                              <Chat />
+                            </Suspense>
+                          } />
+                          <Route path="/login" element={<Login />} />
+                          <Route path="/signup" element={<SignUp />} />
+                          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                          <Route path="/admin/inventory" element={<InventoryManagement />} />
+                          <Route path="/admin/chat" element={<AdminChat />} />
+                        </Routes>
+                      </Suspense>
+                    </Router>
+                  </WishlistProvider>
+                </CartProvider>
+              </ChatProvider>
+            </AuthProvider>
+          </LanguageProvider>
+        </HelmetProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
+  );
+}
+
+export default App;
