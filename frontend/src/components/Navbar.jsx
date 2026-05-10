@@ -32,7 +32,7 @@ const Navbar = () => {
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
   const userMenuRef = useRef(null);
   const adminMenuRef = useRef(null);
-  
+
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const { cartCount } = useCart();
   const { wishlist } = useWishlist();
@@ -74,7 +74,7 @@ const Navbar = () => {
     <nav className="bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-50 border-b border-gray-200 dark:border-gray-800">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          
+
           {/* ===== LEFT: Logo ===== */}
           <Link to="/" className="flex items-center space-x-2 flex-shrink-0">
             <span className="text-2xl">🏗️</span>
@@ -98,7 +98,7 @@ const Navbar = () => {
 
           {/* ===== RIGHT: Actions (Desktop) ===== */}
           <div className="hidden md:flex items-center space-x-0.5">
-            
+
             {/* Cart & Wishlist - Customer only */}
             {isAuthenticated && !isAdmin && (
               <>
@@ -144,7 +144,7 @@ const Navbar = () => {
             {/* ========== AUTH AREA ========== */}
             {isAuthenticated ? (
               <div className="flex items-center gap-1">
-                
+
                 {/* Admin Dropdown */}
                 {isAdmin && (
                   <div className="relative" ref={adminMenuRef}>
@@ -160,6 +160,9 @@ const Navbar = () => {
                         <Link to="/admin/inventory" onClick={() => setAdminMenuOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition">📦 Inventory</Link>
                         <Link to="/admin/users" onClick={() => setAdminMenuOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition">👥 Users</Link>
                         <Link to="/admin/inquiries" onClick={() => setAdminMenuOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition">📧 Inquiries</Link>
+                        <Link to="/admin/reviews" onClick={() => setAdminMenuOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition">⭐ Reviews</Link>
+                        <Link to="/admin/orders" onClick={() => setAdminMenuOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition">📋 Orders</Link>
+                        <Link to="/admin/analytics" onClick={() => setAdminMenuOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition">📊 Analytics</Link>
                       </div>
                     )}
                   </div>
@@ -185,6 +188,7 @@ const Navbar = () => {
                         <span className="text-[10px] uppercase px-2 py-0.5 rounded-full mt-1.5 inline-block bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-medium">{user?.role}</span>
                       </div>
                       <Link to="/profile" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition">👤 My Profile</Link>
+                      <Link to="/orders" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition">📦 My Orders</Link>
                       {!isAdmin && (
                         <>
                           <Link to="/cart" onClick={() => setUserMenuOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition">🛒 Cart ({cartCount})</Link>
@@ -240,6 +244,7 @@ const Navbar = () => {
                   </div>
                 </div>
                 <Link to="/profile" className="block px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200" onClick={() => setIsOpen(false)}>👤 Profile</Link>
+                <Link to="/orders" className="block px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200" onClick={() => setIsOpen(false)}>📦 My Orders</Link>
                 {!isAdmin && (
                   <>
                     <Link to="/cart" className="block px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200" onClick={() => setIsOpen(false)}>🛒 Cart ({cartCount})</Link>

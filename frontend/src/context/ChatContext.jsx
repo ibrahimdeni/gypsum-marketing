@@ -14,12 +14,21 @@ export const ChatProvider = ({ children }) => {
   };
 
   const fetchUnreadCount = useCallback(async () => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) return; // Guard dulu
+
     try {
-      const { data } = await axios.get('/api/chat/unread', getConfig());
+      const token = localStorage.getItem('token');
+      if (!token) return; // Guard lagi
+
+      const { data } = await axios.get('/api/chat/unread', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setUnreadCount(data.data?.count || 0);
     } catch (error) {
-      console.error('Error fetching unread count:', error);
+      // Silent fail - jangan console.error
+      if (error.response?.status !== 401) {
+        console.error('Error fetching unread count:', error);
+      }
     }
   }, [isAuthenticated, user?._id]);
 

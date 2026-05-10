@@ -35,6 +35,11 @@ const Chat = lazy(() => import('./pages/Chat'));
 const Profile = lazy(() => import('./pages/Profile'));
 const AdminReviews = lazy(() => import('./pages/AdminReviews'));
 const AdminAnalytics = lazy(() => import('./pages/AdminAnalytics'));
+const Checkout = lazy(() => import('./pages/Checkout'));
+// const Payment = lazy(() => import('./pages/Payment'));
+const MyOrders = lazy(() => import('./pages/MyOrders'));
+const OrderDetail = lazy(() => import('./pages/OrderDetail'));
+const AdminOrders = lazy(() => import('./pages/AdminOrders'));
 
 // Page Loader
 const PageLoader = () => (
@@ -82,6 +87,10 @@ function App() {
                             <Route path="cart" element={<Cart />} />
                             <Route path="wishlist" element={<Wishlist />} />
                             <Route path="profile" element={<Profile />} />
+                            <Route path="checkout" element={<Checkout />} />
+                            {/* <Route path="payment" element={<Payment />} /> */}
+                            <Route path="orders" element={<MyOrders />} />
+                            <Route path="orders/:id" element={<OrderDetail />} />
                           </Route>
                           <Route path="/chat" element={
                             <Suspense fallback={<PageLoader />}>
@@ -96,6 +105,7 @@ function App() {
                           <Route path="/admin/users" element={<AdminUsers />} />
                           <Route path="/admin/inquiries" element={<AdminInquiries />} />
                           <Route path="/admin/reviews" element={<AdminReviews />} />
+                          <Route path="/admin/orders" element={<AdminOrders />} />
                           <Route path="/admin/analytics" element={<AdminAnalytics />} />
                         </Routes>
                       </Suspense>
